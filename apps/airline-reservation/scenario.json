@@ -1,0 +1,13 @@
+{
+  "slug": "airline-reservation",
+  "name": "Airline Reservation",
+  "domain": "Travel",
+  "description": "Creates flight reservations against a capacity and fare dependency.",
+  "operation": "reserve-seat",
+  "dependency": "seat-inventory",
+  "slo_availability": 99.95,
+  "slo_latency_ms": 700,
+  "default_fault": "error",
+  "runbook": "runbooks/airline-reservation.md",
+  "business_impact": "Travelers cannot reserve seats and fare inventory becomes inconsistent."
+}

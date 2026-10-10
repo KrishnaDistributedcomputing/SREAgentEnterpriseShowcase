@@ -1,0 +1,101 @@
+x-showcase-app: &showcase-app
+  build:
+    context: .
+  environment: &showcase-environment
+    ENABLE_FAULT_INJECTION: "true"
+    DEMO_API_KEY: "${DEMO_API_KEY:?Set DEMO_API_KEY before starting the fleet}"
+    DEPLOYMENT_ENVIRONMENT: "local-compose"
+  restart: unless-stopped
+
+services:
+  retail-checkout:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: retail-checkout
+    ports: ["8101:8080"]
+  payments-api:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: payments-api
+    ports: ["8102:8080"]
+  inventory-service:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: inventory-service
+    ports: ["8103:8080"]
+  order-fulfillment:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: order-fulfillment
+    ports: ["8104:8080"]
+  banking-ledger:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: banking-ledger
+    ports: ["8105:8080"]
+  claims-processing:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: claims-processing
+    ports: ["8106:8080"]
+  patient-scheduling:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: patient-scheduling
+    ports: ["8107:8080"]
+  airline-reservation:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: airline-reservation
+    ports: ["8108:8080"]
+  logistics-tracking:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: logistics-tracking
+    ports: ["8109:8080"]
+  media-streaming:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: media-streaming
+    ports: ["8110:8080"]
+  identity-access:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: identity-access
+    ports: ["8111:8080"]
+  iot-ingestion:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: iot-ingestion
+    ports: ["8112:8080"]
+  data-pipeline:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: data-pipeline
+    ports: ["8113:8080"]
+  collaboration-api:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: collaboration-api
+    ports: ["8114:8080"]
+  ai-inference-gateway:
+    <<: *showcase-app
+    environment:
+      <<: *showcase-environment
+      APP_SLUG: ai-inference-gateway
+    ports: ["8115:8080"]
+

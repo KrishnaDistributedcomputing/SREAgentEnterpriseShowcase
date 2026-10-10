@@ -1,0 +1,13 @@
+{
+  "slug": "payments-api",
+  "name": "Payments API",
+  "domain": "Financial Services",
+  "description": "Authorizes payment transactions with a latency-sensitive processor dependency.",
+  "operation": "authorize-payment",
+  "dependency": "card-processor",
+  "slo_availability": 99.99,
+  "slo_latency_ms": 300,
+  "default_fault": "latency",
+  "runbook": "runbooks/payments-api.md",
+  "business_impact": "Authorizations time out, transactions fail, and merchants lose sales."
+}

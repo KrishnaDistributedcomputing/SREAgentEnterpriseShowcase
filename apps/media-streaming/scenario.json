@@ -1,0 +1,13 @@
+{
+  "slug": "media-streaming",
+  "name": "Media Streaming",
+  "domain": "Media",
+  "description": "Issues playback sessions and demonstrates elevated startup latency.",
+  "operation": "start-playback",
+  "dependency": "content-delivery-network",
+  "slo_availability": 99.95,
+  "slo_latency_ms": 350,
+  "default_fault": "latency",
+  "runbook": "runbooks/media-streaming.md",
+  "business_impact": "Playback starts slowly, viewers abandon sessions, and support demand increases."
+}

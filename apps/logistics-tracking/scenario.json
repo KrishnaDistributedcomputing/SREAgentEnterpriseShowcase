@@ -1,0 +1,13 @@
+{
+  "slug": "logistics-tracking",
+  "name": "Logistics Tracking",
+  "domain": "Transportation",
+  "description": "Ingests shipment location updates and demonstrates event-stream disruption.",
+  "operation": "record-location",
+  "dependency": "tracking-event-stream",
+  "slo_availability": 99.9,
+  "slo_latency_ms": 900,
+  "default_fault": "dependency",
+  "runbook": "runbooks/logistics-tracking.md",
+  "business_impact": "Shipment locations become stale and delivery exceptions are missed."
+}

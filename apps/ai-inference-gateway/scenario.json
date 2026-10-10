@@ -1,0 +1,13 @@
+{
+  "slug": "ai-inference-gateway",
+  "name": "AI Inference Gateway",
+  "domain": "Artificial Intelligence",
+  "description": "Routes model inference requests and demonstrates provider latency or availability loss.",
+  "operation": "run-inference",
+  "dependency": "model-endpoint",
+  "slo_availability": 99.9,
+  "slo_latency_ms": 1200,
+  "default_fault": "dependency",
+  "runbook": "runbooks/ai-inference-gateway.md",
+  "business_impact": "AI-assisted business workflows stall and user experiences degrade."
+}
