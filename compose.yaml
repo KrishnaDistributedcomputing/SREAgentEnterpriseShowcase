@@ -5,6 +5,7 @@ x-showcase-app: &showcase-app
     ENABLE_FAULT_INJECTION: "true"
     DEMO_API_KEY: "${DEMO_API_KEY:?Set DEMO_API_KEY before starting the fleet}"
     DEPLOYMENT_ENVIRONMENT: "local-compose"
+    SHOWCASE_ROOT: "/workspace"
   restart: unless-stopped
 
 services:
@@ -98,4 +99,3 @@ services:
       <<: *showcase-environment
       APP_SLUG: ai-inference-gateway
     ports: ["8115:8080"]
-

@@ -128,6 +128,10 @@ resource applications 'Microsoft.App/containerApps@2024-03-01' = [
                 value: environmentName
               }
               {
+                name: 'SHOWCASE_ROOT'
+                value: '/workspace'
+              }
+              {
                 name: 'ENABLE_FAULT_INJECTION'
                 value: string(enableFaultInjection)
               }
@@ -199,4 +203,3 @@ output applicationUrls array = [
     url: 'https://${applications[index].properties.configuration.ingress.fqdn}'
   }
 ]
-

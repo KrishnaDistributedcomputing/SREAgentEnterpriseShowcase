@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, cast
@@ -67,8 +68,17 @@ class AppScenario:
 
 
 def repository_root() -> Path:
-    """Return the repository root based on the installed source layout."""
-    return Path(__file__).resolve().parents[2]
+    """Return the root containing the deployed application catalog."""
+    configured_root = os.getenv("SHOWCASE_ROOT")
+    candidates = [
+        Path(configured_root) if configured_root else None,
+        Path.cwd(),
+        Path(__file__).resolve().parents[2],
+    ]
+    for candidate in candidates:
+        if candidate is not None and (candidate / "apps").is_dir():
+            return candidate
+    raise FileNotFoundError("Could not locate the showcase apps directory")
 
 
 def load_scenario(slug: str, root: Path | None = None) -> AppScenario:

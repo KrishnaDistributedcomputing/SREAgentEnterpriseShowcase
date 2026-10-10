@@ -17,3 +17,13 @@ def test_every_scenario_has_a_runbook() -> None:
 
     for scenario in list_scenarios():
         assert (root / scenario.runbook).is_file(), scenario.slug
+
+
+def test_configured_root_supports_installed_runtime(
+    monkeypatch,
+) -> None:
+    root = repository_root()
+    monkeypatch.chdir(root / "src")
+    monkeypatch.setenv("SHOWCASE_ROOT", str(root))
+
+    assert repository_root() == root
