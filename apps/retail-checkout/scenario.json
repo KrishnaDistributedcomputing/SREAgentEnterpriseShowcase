@@ -1,0 +1,13 @@
+{
+  "slug": "retail-checkout",
+  "name": "Retail Checkout",
+  "domain": "Retail",
+  "description": "Processes enterprise commerce checkout requests and exposes payment dependency failures.",
+  "operation": "submit-checkout",
+  "dependency": "payment-authorization",
+  "slo_availability": 99.95,
+  "slo_latency_ms": 450,
+  "default_fault": "dependency",
+  "runbook": "runbooks/retail-checkout.md",
+  "business_impact": "Customers cannot complete purchases and revenue is lost."
+}

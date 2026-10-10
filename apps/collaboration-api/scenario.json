@@ -1,0 +1,13 @@
+{
+  "slug": "collaboration-api",
+  "name": "Collaboration API",
+  "domain": "Productivity",
+  "description": "Publishes collaboration messages and demonstrates messaging backlog incidents.",
+  "operation": "publish-message",
+  "dependency": "message-broker",
+  "slo_availability": 99.95,
+  "slo_latency_ms": 300,
+  "default_fault": "latency",
+  "runbook": "runbooks/collaboration-api.md",
+  "business_impact": "Teams cannot exchange time-sensitive messages or notifications."
+}

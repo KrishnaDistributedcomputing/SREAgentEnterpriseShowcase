@@ -1,0 +1,13 @@
+{
+  "slug": "claims-processing",
+  "name": "Claims Processing",
+  "domain": "Insurance",
+  "description": "Submits insurance claims and demonstrates document service dependency incidents.",
+  "operation": "submit-claim",
+  "dependency": "document-service",
+  "slo_availability": 99.9,
+  "slo_latency_ms": 1000,
+  "default_fault": "dependency",
+  "runbook": "runbooks/claims-processing.md",
+  "business_impact": "Claim intake stops and policyholder resolution times increase."
+}

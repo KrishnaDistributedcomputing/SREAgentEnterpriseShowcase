@@ -1,0 +1,13 @@
+{
+  "slug": "identity-access",
+  "name": "Identity Access",
+  "domain": "Enterprise Security",
+  "description": "Evaluates access requests and models identity-provider availability incidents.",
+  "operation": "evaluate-access",
+  "dependency": "identity-provider",
+  "slo_availability": 99.99,
+  "slo_latency_ms": 200,
+  "default_fault": "not-ready",
+  "runbook": "runbooks/identity-access.md",
+  "business_impact": "Employees and customers cannot access protected enterprise systems."
+}

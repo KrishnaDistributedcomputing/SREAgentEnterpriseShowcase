@@ -1,0 +1,13 @@
+{
+  "slug": "inventory-service",
+  "name": "Inventory Service",
+  "domain": "Retail",
+  "description": "Reserves stock and demonstrates stale or unavailable inventory dependencies.",
+  "operation": "reserve-inventory",
+  "dependency": "inventory-database",
+  "slo_availability": 99.9,
+  "slo_latency_ms": 500,
+  "default_fault": "dependency",
+  "runbook": "runbooks/inventory-service.md",
+  "business_impact": "Orders oversell or fail because inventory cannot be reserved."
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "iot-ingestion",
+  "name": "IoT Ingestion",
+  "domain": "Manufacturing",
+  "description": "Accepts device telemetry and exposes ingestion throttling and stream failures.",
+  "operation": "ingest-telemetry",
+  "dependency": "device-event-hub",
+  "slo_availability": 99.9,
+  "slo_latency_ms": 400,
+  "default_fault": "error",
+  "runbook": "runbooks/iot-ingestion.md",
+  "business_impact": "Factory telemetry is lost and predictive maintenance signals arrive late."
+}

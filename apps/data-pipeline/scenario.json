@@ -1,0 +1,13 @@
+{
+  "slug": "data-pipeline",
+  "name": "Data Pipeline",
+  "domain": "Analytics",
+  "description": "Starts analytical processing jobs and demonstrates downstream warehouse failures.",
+  "operation": "start-data-job",
+  "dependency": "analytics-warehouse",
+  "slo_availability": 99.5,
+  "slo_latency_ms": 1500,
+  "default_fault": "dependency",
+  "runbook": "runbooks/data-pipeline.md",
+  "business_impact": "Executive reports and machine-learning features become stale."
+}

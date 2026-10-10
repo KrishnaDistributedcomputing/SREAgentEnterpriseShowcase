@@ -1,0 +1,103 @@
+openapi: 3.1.0
+info:
+  title: SRE Showcase Application Contract
+  version: 1.0.0
+  description: Common operational contract implemented by all 15 sample applications.
+paths:
+  /:
+    get:
+      summary: Get scenario metadata
+      responses:
+        "200":
+          description: Scenario identity, SLO, business impact, and runbook
+  /health/live:
+    get:
+      summary: Get process liveness
+      responses:
+        "200":
+          description: Process is alive
+  /health/ready:
+    get:
+      summary: Get traffic readiness
+      responses:
+        "200":
+          description: Application is ready
+        "503":
+          description: A not-ready demonstration fault is active
+  /work:
+    post:
+      summary: Perform the scenario business operation
+      parameters:
+        - in: query
+          name: units
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 1
+      responses:
+        "200":
+          description: Operation completed
+        "500":
+          description: An error fault is active
+        "503":
+          description: A dependency fault is active
+  /faults:
+    get:
+      summary: Get current fault state
+      responses:
+        "200":
+          description: Current state
+    post:
+      summary: Activate a bounded fault
+      parameters:
+        - in: header
+          name: X-Demo-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FaultRequest"
+      responses:
+        "200":
+          description: Fault activated
+        "401":
+          description: Demonstration key is invalid
+        "404":
+          description: Fault injection is disabled
+    delete:
+      summary: Clear the current fault
+      parameters:
+        - in: header
+          name: X-Demo-Key
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Fault cleared
+components:
+  schemas:
+    FaultRequest:
+      type: object
+      required:
+        - mode
+      properties:
+        mode:
+          type: string
+          enum:
+            - none
+            - error
+            - latency
+            - dependency
+            - not-ready
+        duration_seconds:
+          type: integer
+          minimum: 1
+          maximum: 900
+          default: 300
+

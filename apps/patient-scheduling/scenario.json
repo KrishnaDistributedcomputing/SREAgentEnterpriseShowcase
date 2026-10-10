@@ -1,0 +1,13 @@
+{
+  "slug": "patient-scheduling",
+  "name": "Patient Scheduling",
+  "domain": "Healthcare",
+  "description": "Books clinical appointments while protecting patient-facing availability.",
+  "operation": "book-appointment",
+  "dependency": "provider-calendar",
+  "slo_availability": 99.95,
+  "slo_latency_ms": 600,
+  "default_fault": "latency",
+  "runbook": "runbooks/patient-scheduling.md",
+  "business_impact": "Patients cannot book care and contact-center volume rises."
+}

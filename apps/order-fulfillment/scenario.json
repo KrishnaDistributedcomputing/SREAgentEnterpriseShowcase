@@ -1,0 +1,13 @@
+{
+  "slug": "order-fulfillment",
+  "name": "Order Fulfillment",
+  "domain": "Supply Chain",
+  "description": "Dispatches orders to fulfillment centers and exposes queue processing failures.",
+  "operation": "dispatch-order",
+  "dependency": "fulfillment-queue",
+  "slo_availability": 99.9,
+  "slo_latency_ms": 800,
+  "default_fault": "error",
+  "runbook": "runbooks/order-fulfillment.md",
+  "business_impact": "Paid orders are delayed and warehouse service-level commitments are missed."
+}

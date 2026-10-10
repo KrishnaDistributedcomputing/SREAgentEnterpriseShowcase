@@ -1,0 +1,13 @@
+{
+  "slug": "banking-ledger",
+  "name": "Banking Ledger",
+  "domain": "Banking",
+  "description": "Records ledger entries with strict availability and auditability expectations.",
+  "operation": "post-ledger-entry",
+  "dependency": "ledger-database",
+  "slo_availability": 99.99,
+  "slo_latency_ms": 250,
+  "default_fault": "not-ready",
+  "runbook": "runbooks/banking-ledger.md",
+  "business_impact": "Account balances stop updating and regulated transaction processing is delayed."
+}
