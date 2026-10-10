@@ -82,7 +82,13 @@ def load_scenario(slug: str, root: Path | None = None) -> AppScenario:
         FileNotFoundError: When the application configuration does not exist.
         ValueError: When the configuration is incomplete or inconsistent.
     """
-    config_path = (root or repository_root()) / "apps" / slug / "scenario.json"
+    apps_root = (root or repository_root()) / "apps"
+    candidates = list(apps_root.glob(f"*/{slug}/scenario.json"))
+    if not candidates:
+        raise FileNotFoundError(f"No scenario named {slug!r} exists under {apps_root}")
+    if len(candidates) > 1:
+        raise ValueError(f"Scenario slug {slug!r} is duplicated under {apps_root}")
+    config_path = candidates[0]
     value = json.loads(config_path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError(f"Scenario must be a JSON object: {config_path}")
@@ -96,7 +102,6 @@ def list_scenarios(root: Path | None = None) -> list[AppScenario]:
     """Load every application scenario in stable name order."""
     apps_root = (root or repository_root()) / "apps"
     return [
-        load_scenario(path.name, root)
-        for path in sorted(apps_root.iterdir())
-        if path.is_dir() and (path / "scenario.json").is_file()
+        load_scenario(path.parent.name, root)
+        for path in sorted(apps_root.glob("*/*/scenario.json"))
     ]

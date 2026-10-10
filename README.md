@@ -61,6 +61,10 @@ production application suite.
 | Collaboration API | Productivity | Messaging latency | Latency |
 | AI Inference Gateway | Artificial intelligence | Model endpoint outage | Dependency |
 
+The applications are physically grouped into five portfolios under
+[`apps/`](apps/README.md): commerce and retail, financial services, customer
+experience, industrial and data, and digital platforms.
+
 ## Quick start
 
 ### Prerequisites
@@ -109,6 +113,14 @@ The applications bind to ports `8101` through `8115`.
 Start with the feature [specification](specs/001-enterprise-sre-agent-showcase/spec.md),
 then read the [implementation plan](specs/001-enterprise-sre-agent-showcase/plan.md)
 and [enterprise demonstration guide](docs/enterprise-demo-guide.md).
+
+Enterprise decision documents:
+
+* [Business specification](docs/business-specification.md)
+* [Detailed design](docs/detailed-design.md)
+* [User guide](docs/user-guide.md)
+* [Central US cost model](docs/cost-model.md)
+* [Architecture](docs/architecture.md)
 
 ## Validation
 
