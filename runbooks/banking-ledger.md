@@ -4,7 +4,7 @@ description: Application context and governed investigation of ledger readiness 
 author: Enterprise SRE Platform Team
 ms.date: 2026-10-11
 ms.topic: troubleshooting
-estimated_reading_time: 8
+estimated_reading_time: 14
 ---
 
 ## Application overview
@@ -45,6 +45,63 @@ flowchart LR
 The data path represents regulated ledger processing. The operations path limits
 Azure SRE Agent to probe, revision, and telemetry evidence, with no access to
 ledger records.
+
+## Azure resources for telemetry and investigation
+
+| Azure resource or configuration | Requirement | Purpose |
+|---------------------------------|-------------|---------|
+| Dedicated resource group | Required | Isolates cost, RBAC, policy, alerts, and investigation scope |
+| Log Analytics workspace | Deployed | Stores Container Apps console and system logs for 30 days |
+| Workspace-based Application Insights | Deployed | Receives OpenTelemetry requests, traces, and custom metrics |
+| Container Apps environment | Deployed | Sends application and platform logs to Log Analytics |
+| Banking Ledger Container App | Deployed | Provides revision, replica, ingress, probe, and scaling evidence |
+| Azure Container Registry | Supporting | Stores the shared image used by the application revision |
+| Workload managed identity | Supporting | Pulls the image with `AcrPull`; it has no ledger data access |
+| Azure Monitor alert rules | Add | Detect readiness and SLO failures; not in the current Bicep |
+| Application Insights availability test | Add | Tests `/health/ready` from outside the Container Apps environment |
+| Azure SRE Agent and agent identity | Deploy separately | Investigates with Reader and monitoring access in Review mode |
+| Azure Monitor and GitHub connections | Configure separately | Supply incident, source, metadata, and runbook context |
+| Activity Log diagnostic setting | Recommended | Retains deployment and control-plane events in Log Analytics |
+| Action group and Key Vault | Recommended | Notify humans and protect demonstration secrets |
+
+### Required Banking Ledger signals
+
+| Signal | Evidence to collect |
+|--------|---------------------|
+| Request telemetry | `POST /work`, status, duration, operation ID, and `service.name=banking-ledger` |
+| Business metric | `showcase.business.operations` with outcome and fault-mode attributes |
+| Readiness | `/health/ready` failures while `/health/live` remains successful |
+| Platform | Revision, replica, ingress, probe, deployment, CPU, and memory evidence |
+| Application log | Operation result without account, amount, balance, or transaction content |
+| Dependency | Production database spans must be sanitized and must not include statements or records |
+
+Ledger payloads, customer identifiers, balances, SQL statements, and credentials
+must remain outside telemetry and agent context.
+
+## Step-by-step telemetry configuration
+
+1. Create a dedicated resource group with regulated-workload ownership, tags,
+   budget, policy, and access review.
+2. Create Azure Container Registry and a workload managed identity with only
+   `AcrPull`; do not grant ledger permissions.
+3. Deploy Log Analytics with approved retention and restricted query access.
+4. Create workspace-based Application Insights linked to that workspace.
+5. Create the Container Apps environment and route platform and console logs to
+   Log Analytics.
+6. Deploy Banking Ledger with `APP_SLUG=banking-ledger`, probes, Application
+   Insights configuration, and the workload identity.
+7. Confirm OpenTelemetry emits sanitized request traces and business metrics with
+   the Banking Ledger service name.
+8. Route Activity Log events to Log Analytics for revision and deployment evidence.
+9. Create an alert when readiness fails while liveness succeeds, scoped by
+   service name and revision.
+10. Add an external `/health/ready` availability test and action group for
+    regulated on-call notification.
+11. Deploy Azure SRE Agent separately with approved read and monitoring-query
+    roles only, then connect Azure Monitor, Application Insights, and GitHub.
+12. Configure Review mode, generate baseline and not-ready signals, and verify
+    the agent retrieves probes, revision events, metrics, impact, and this runbook
+    without receiving ledger data.
 
 ## Where Azure SRE Agent plays a role
 

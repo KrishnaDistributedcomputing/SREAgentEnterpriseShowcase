@@ -4,7 +4,7 @@ description: Application context and governed investigation of checkout dependen
 author: Enterprise SRE Platform Team
 ms.date: 2026-10-11
 ms.topic: troubleshooting
-estimated_reading_time: 8
+estimated_reading_time: 14
 ---
 
 ## Application overview
@@ -45,6 +45,63 @@ flowchart LR
 The transaction path shows how payment authorization affects completed purchases.
 The operations path gives Azure SRE Agent evidence without allowing it to process
 payments or bypass operator approval.
+
+## Azure resources for telemetry and investigation
+
+| Azure resource or configuration | Requirement | Purpose |
+|---------------------------------|-------------|---------|
+| Dedicated resource group | Required | Isolates cost, RBAC, policy, alerts, and investigation scope |
+| Log Analytics workspace | Deployed | Stores Container Apps console and system logs for 30 days |
+| Workspace-based Application Insights | Deployed | Receives OpenTelemetry requests, traces, and custom metrics |
+| Container Apps environment | Deployed | Sends application and platform logs to Log Analytics |
+| Retail Checkout Container App | Deployed | Provides revision, replica, ingress, probe, and scaling evidence |
+| Azure Container Registry | Supporting | Stores the shared image used by the application revision |
+| Workload managed identity | Supporting | Pulls the image with `AcrPull`; it is not the SRE Agent identity |
+| Azure Monitor alert rules | Add | Detect checkout errors and SLO breaches; not in the current Bicep |
+| Application Insights availability test | Add | Tests `/health/ready` from outside the Container Apps environment |
+| Azure SRE Agent and agent identity | Deploy separately | Investigates with Reader and monitoring access in Review mode |
+| Azure Monitor and GitHub connections | Configure separately | Supply incident, source, metadata, and runbook context |
+| Activity Log diagnostic setting | Recommended | Retains deployment and control-plane events in Log Analytics |
+| Action group and Key Vault | Recommended | Notify humans and protect demonstration secrets |
+
+### Required Retail Checkout signals
+
+| Signal | Evidence to collect |
+|--------|---------------------|
+| Request telemetry | `POST /work`, status, duration, operation ID, and `service.name=retail-checkout` |
+| Business metric | `showcase.business.operations` with outcome and fault-mode attributes |
+| Application log | `dependency_unavailable` with `dependency=payment-authorization` |
+| Health | `/health/live` and `/health/ready` status and external availability |
+| Platform | Revision, replica, ingress, scaling, deployment, CPU, and memory evidence |
+| Dependency | The showcase logs the simulated dependency; production must instrument the payment client |
+
+Production telemetry must exclude cardholder data, payment tokens, and customer
+identifiers from logs, trace attributes, and alert payloads.
+
+## Step-by-step telemetry configuration
+
+1. Create a dedicated resource group and assign owners, tags, budget, and policy.
+2. Create Azure Container Registry and a workload managed identity with only
+   `AcrPull` on that registry.
+3. Deploy Log Analytics with the approved retention and data-access controls.
+4. Create workspace-based Application Insights linked to that workspace.
+5. Create the Container Apps environment and route console and system logs to
+   Log Analytics.
+6. Deploy Retail Checkout with `APP_SLUG=retail-checkout`, health probes, the
+   Application Insights connection string, and the workload identity.
+7. Confirm OpenTelemetry exports request traces and
+   `showcase.business.operations` with the Retail Checkout service name.
+8. Add an Activity Log diagnostic setting when deployment history must be
+   retained and queried with checkout telemetry.
+9. Create an alert for checkout 503 failures or `dependency_unavailable`, scoped
+   by service name and revision.
+10. Add a `/health/ready` availability test and an alert for consecutive failures.
+    Attach an action group when human notification is required.
+11. Deploy Azure SRE Agent separately, grant approved read and monitoring-query
+    access, then connect Azure Monitor, Application Insights, and GitHub.
+12. Configure a Review-mode response plan, generate baseline and fault traffic,
+    and verify retrieval of the alert, trace, log, metric, revision, business
+    impact, and runbook before approving recovery.
 
 ## Where Azure SRE Agent plays a role
 

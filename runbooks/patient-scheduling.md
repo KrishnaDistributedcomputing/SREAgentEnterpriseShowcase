@@ -4,7 +4,7 @@ description: Application context and governed investigation of appointment laten
 author: Enterprise SRE Platform Team
 ms.date: 2026-10-11
 ms.topic: troubleshooting
-estimated_reading_time: 8
+estimated_reading_time: 14
 ---
 
 ## Application overview
@@ -44,6 +44,59 @@ flowchart LR
 The patient journey depends on provider-calendar responsiveness. Azure SRE Agent
 uses operational timing evidence without accessing patient, appointment, or
 clinical records.
+
+## Azure resources for telemetry and investigation
+
+| Azure resource or configuration | Requirement | Purpose |
+|---------------------------------|-------------|---------|
+| Dedicated resource group | Required | Isolates cost, RBAC, policy, alerts, and investigation scope |
+| Log Analytics workspace | Deployed | Stores Container Apps console and system logs for 30 days |
+| Workspace-based Application Insights | Deployed | Receives OpenTelemetry requests, traces, and custom metrics |
+| Container Apps environment | Deployed | Sends application and platform logs to Log Analytics |
+| Patient Scheduling Container App | Deployed | Provides revision, replica, ingress, probe, and scaling evidence |
+| Azure Container Registry | Supporting | Stores the shared image used by the application revision |
+| Workload managed identity | Supporting | Pulls the image with `AcrPull`; it has no clinical access |
+| Azure Monitor alert rules | Add | Detect booking latency and errors; not in the current Bicep |
+| Application Insights availability test | Add | Tests `/health/ready` externally |
+| Azure SRE Agent and agent identity | Deploy separately | Investigates with approved read access in Review mode |
+| Azure Monitor and GitHub connections | Configure separately | Supply incident, source, metadata, and runbook context |
+| Activity Log diagnostic setting | Recommended | Retains deployment and control-plane events |
+| Action group and Key Vault | Recommended | Notify humans and protect demonstration secrets |
+
+### Required Patient Scheduling signals
+
+| Signal | Evidence to collect |
+|--------|---------------------|
+| Request telemetry | `POST /work`, duration, status, operation ID, and `service.name=patient-scheduling` |
+| Business metric | `showcase.business.operations` with outcome and fault mode |
+| Latency | Request percentiles compared with the 600 ms objective |
+| Health | Liveness, readiness, and external availability |
+| Platform | Revision, replica, ingress, scaling, deployment, CPU, and memory |
+| Dependency | Instrument calendar-client spans in production without patient or appointment data |
+
+Patient identifiers, appointment details, diagnoses, provider notes, and other
+clinical data must remain outside telemetry and agent context.
+
+## Step-by-step telemetry configuration
+
+1. Create a dedicated resource group with healthcare ownership, budget, policy,
+   and access review.
+2. Create Azure Container Registry and a workload identity with only `AcrPull`.
+3. Deploy Log Analytics with approved retention and restricted access.
+4. Create workspace-based Application Insights linked to the workspace.
+5. Create the Container Apps environment and route platform and console logs.
+6. Deploy Patient Scheduling with `APP_SLUG=patient-scheduling`, probes,
+   Application Insights configuration, and the workload identity.
+7. Verify sanitized request traces and business metrics use the Patient
+   Scheduling service name.
+8. Route Activity Log events to Log Analytics for deployment correlation.
+9. Alert on sustained scheduling duration above 600 ms and on request errors,
+   scoped by service and revision.
+10. Add a readiness availability test and human-notification action group.
+11. Deploy Azure SRE Agent separately with approved read and query roles, then
+    connect Azure Monitor, Application Insights, and GitHub.
+12. Configure Review mode, generate baseline and latency traffic, and verify the
+    agent receives operational evidence and this runbook without clinical data.
 
 ## Where Azure SRE Agent plays a role
 

@@ -4,7 +4,7 @@ description: Application context and governed investigation of model endpoint in
 author: Enterprise SRE Platform Team
 ms.date: 2026-10-11
 ms.topic: troubleshooting
-estimated_reading_time: 8
+estimated_reading_time: 14
 ---
 
 ## Application overview
@@ -44,6 +44,61 @@ flowchart LR
 The inference path keeps provider access behind the gateway. Azure SRE Agent
 investigates endpoint and revision evidence without reading prompts, changing
 models, or bypassing safety and cost controls.
+
+## Azure resources for telemetry and investigation
+
+| Azure resource or configuration | Requirement | Purpose |
+|---------------------------------|-------------|---------|
+| Dedicated resource group | Required | Isolates cost, RBAC, policy, alerts, and investigation scope |
+| Log Analytics workspace | Deployed | Stores Container Apps console and system logs for 30 days |
+| Workspace-based Application Insights | Deployed | Receives OpenTelemetry requests, traces, and custom metrics |
+| Container Apps environment | Deployed | Sends application and platform logs to Log Analytics |
+| AI Inference Gateway Container App | Deployed | Provides revision, replica, ingress, probe, and scaling evidence |
+| Azure Container Registry | Supporting | Stores the shared image used by the application revision |
+| Workload managed identity | Supporting | Pulls the image with `AcrPull`; it has no model access |
+| Azure Monitor alert rules | Add | Detect endpoint errors, latency, and SLO breaches |
+| Application Insights availability test | Add | Tests `/health/ready` externally; not in current Bicep |
+| Azure SRE Agent and agent identity | Deploy separately | Investigates with approved read access in Review mode |
+| Azure Monitor and GitHub connections | Configure separately | Supply incident, source, metadata, and runbook context |
+| Activity Log diagnostic setting | Recommended | Retains deployment and control-plane events |
+| Action group and Key Vault | Recommended | Notify humans and protect demonstration secrets |
+
+### Required AI Inference Gateway signals
+
+| Signal | Evidence to collect |
+|--------|---------------------|
+| Request telemetry | `POST /work`, status, duration, operation ID, and `service.name=ai-inference-gateway` |
+| Business metric | `showcase.business.operations` with outcome and fault mode |
+| Application log | `dependency_unavailable` with `dependency=model-endpoint` |
+| Health | Liveness, readiness, and external availability |
+| Platform | Revision, replica, ingress, scaling, deployment, CPU, and memory |
+| Dependency | Add model-client spans, safe token counts, throttling, and endpoint metrics in production |
+
+Prompts, outputs, embeddings, model credentials, personal data, and proprietary
+content must remain outside telemetry and SRE Agent context.
+
+## Step-by-step telemetry configuration
+
+1. Create a dedicated resource group with AI governance ownership, budget, policy,
+   and access review.
+2. Create Azure Container Registry and a workload identity with only `AcrPull`;
+   use a separate identity for any production model access.
+3. Deploy Log Analytics with approved retention and restricted access.
+4. Create workspace-based Application Insights linked to the workspace.
+5. Create the Container Apps environment and route platform and console logs.
+6. Deploy AI Inference Gateway with `APP_SLUG=ai-inference-gateway`, probes,
+   Application Insights configuration, and the workload identity.
+7. Verify sanitized request traces and business metrics use the gateway service
+   name and contain no prompt or output content.
+8. Route Activity Log events to Log Analytics for deployment correlation.
+9. Alert on 503 responses or `dependency_unavailable`, plus sustained duration
+   above 1,200 ms, scoped by service and revision.
+10. Add a readiness availability test. In production, add endpoint availability,
+    throttling, safe token-usage, latency, and quota alerts.
+11. Deploy Azure SRE Agent separately with approved read and query roles, then
+    connect Azure Monitor, Application Insights, and GitHub.
+12. Configure Review mode, generate baseline and dependency-fault traffic, and
+    verify evidence retrieval without prompts, outputs, or model credentials.
 
 ## Where Azure SRE Agent plays a role
 
