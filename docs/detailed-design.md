@@ -2,7 +2,7 @@
 title: Enterprise SRE Agent Detailed Design
 description: Component, interface, deployment, telemetry, identity, security, and failure design
 author: Enterprise SRE Platform Team
-ms.date: 2026-10-10
+ms.date: 2026-10-11
 ms.topic: concept
 keywords:
   - detailed design
@@ -21,21 +21,77 @@ application, dependency, and latency failures.
 ## System context
 
 ```mermaid
-C4Context
-    title Enterprise SRE Agent Showcase
-    Person(facilitator, "Facilitator", "Triggers and resets synthetic incidents")
-    Person(operator, "On-call operator", "Reviews evidence and approves actions")
-    System(showcase, "Showcase Fleet", "15 observable FastAPI applications")
-    System(agent, "Azure SRE Agent", "Investigates and proposes governed actions")
-    System_Ext(github, "GitHub", "Source, specifications, and runbooks")
-    System_Ext(monitor, "Azure Monitor", "Telemetry, alerts, and incidents")
-    Rel(facilitator, showcase, "Uses HTTPS")
-    Rel(showcase, monitor, "Exports telemetry")
-    Rel(monitor, agent, "Triggers response plan")
-    Rel(github, agent, "Provides code and runbook context")
-    Rel(operator, agent, "Reviews and approves")
-    Rel(agent, showcase, "Performs approved operation")
+flowchart LR
+    subgraph People["People"]
+        direction TB
+        Facilitator["Workshop facilitator<br/>Triggers and resets synthetic incidents"]
+        Operator["On-call operator<br/>Reviews evidence and approves actions"]
+    end
+
+    subgraph Azure["Azure subscription and MVP resource boundary"]
+        direction LR
+
+        subgraph Workload["Showcase workload boundary"]
+            direction TB
+            Environment["Azure Container Apps environment"]
+            Fleet["Showcase fleet<br/>15 FastAPI Container Apps"]
+            WorkloadIdentity["Workload managed identity<br/>AcrPull only"]
+            Environment --> Fleet
+            Fleet -.->|"Uses"| WorkloadIdentity
+        end
+
+        subgraph Observability["Observability boundary"]
+            direction TB
+            AppInsights["Application Insights<br/>Requests, traces, and metrics"]
+            LogAnalytics["Log Analytics<br/>Console, system, and activity logs"]
+            Monitor["Azure Monitor<br/>Alerts and incidents"]
+            AppInsights -->|"Application evidence"| Monitor
+            LogAnalytics -->|"Platform evidence"| Monitor
+        end
+
+        subgraph Operations["Governed operations boundary"]
+            direction TB
+            Agent["Azure SRE Agent<br/>Investigates and proposes actions"]
+            AgentIdentity["SRE Agent managed identity<br/>Reader and approved query access"]
+            Agent -.->|"Uses"| AgentIdentity
+        end
+    end
+
+    subgraph External["External systems"]
+        direction TB
+        GitHub["GitHub<br/>Source, specifications, and runbooks"]
+        Registry["Azure Container Registry<br/>Versioned application image"]
+    end
+
+    Facilitator -->|"HTTPS business and fault-control requests"| Fleet
+    Registry -->|"Pull image"| Fleet
+    WorkloadIdentity -.->|"Authenticates image pull"| Registry
+    Fleet -.->|"OpenTelemetry"| AppInsights
+    Environment -.->|"Console and system logs"| LogAnalytics
+    Monitor -->|"Filtered response plan"| Agent
+    GitHub -.->|"Repository context"| Agent
+    AgentIdentity -.->|"Reads telemetry and resource state"| Observability
+    Agent -->|"Evidence, probable cause, and proposed action"| Operator
+    Operator -->|"Approve or reject"| Agent
+    Agent -.->|"Approved reversible operation"| Fleet
+
+    classDef person fill:#fff4df,color:#5b3a11,stroke:#d78a32,stroke-width:2px
+    classDef workload fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b,stroke-width:1.5px
+    classDef identity fill:#f2ebfa,color:#44235f,stroke:#76528f
+    classDef external fill:#f7f5ee,color:#2f3e3d,stroke:#7a8987
+    class Facilitator,Operator person
+    class Fleet workload
+    class Environment,AppInsights,LogAnalytics,Monitor,Agent azure
+    class WorkloadIdentity,AgentIdentity identity
+    class GitHub,Registry external
 ```
+
+The solid arrows show business, alert, and approval flows. Dashed arrows show
+telemetry, identity, repository context, and governed operational access. The
+workload identity can pull images only. Azure SRE Agent uses a separate identity
+for read and monitoring access, and every write operation remains subject to the
+response plan and operator approval.
 
 ## Component design
 
