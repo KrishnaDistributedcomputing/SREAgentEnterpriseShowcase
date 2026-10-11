@@ -122,6 +122,7 @@ Enterprise decision documents:
 * [User guide](docs/user-guide.md)
 * [MVP cost model](docs/cost-model.md)
 * [Architecture](docs/architecture.md)
+* [Complete MVP Bicep deployment](infra/mvp/README.md)
 
 ## Validation
 

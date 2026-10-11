@@ -137,10 +137,16 @@ mode, and outcome.
 
 ### Azure platform
 
-The Bicep template creates one Log Analytics workspace, one workspace-based
-Application Insights component, one Container Apps environment, and 15 Container
-Apps. Each application uses 0.25 vCPU, 0.5 GiB memory, zero minimum replicas, and
-two maximum replicas.
+The complete MVP Bicep deployment uses two stages. The subscription-scoped
+foundation creates the resource group, cost budget, registry, workload identity,
+Log Analytics, workspace-based Application Insights, Container Apps environment,
+and optional action group. After the shared image is built, the resource-group
+workload stage creates 15 Container Apps plus alerts and availability tests for
+the representative MVP applications.
+
+Each application uses 0.25 vCPU, 0.5 GiB memory, zero minimum replicas, and two
+maximum replicas. The existing-resource template remains available for
+environments that already provide a registry and workload identity.
 
 ### Azure SRE Agent
 
@@ -276,10 +282,11 @@ mode, and synthetic operation counts.
 
 ## Deployment and rollback
 
-Build one immutable image and deploy the same digest to all 15 Container Apps.
-Configuration provides application identity. Use Bicep what-if before deployment.
-Rollback changes the affected app to its previous healthy revision. Resource-group
-deletion is reserved for planned teardown.
+Deploy the MVP foundation, build one immutable image in the created registry,
+then deploy the same digest to all 15 Container Apps. Configuration provides
+application identity. Use Bicep what-if before each deployment stage. Rollback
+changes the affected app to its previous healthy revision. Resource-group deletion
+is reserved for planned teardown.
 
 ## Design decisions
 

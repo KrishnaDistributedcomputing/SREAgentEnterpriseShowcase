@@ -2,7 +2,7 @@
 title: Enterprise SRE Agent Showcase User Guide
 description: Setup, operation, incident simulation, recovery, and troubleshooting guide
 author: Enterprise SRE Platform Team
-ms.date: 2026-10-10
+ms.date: 2026-10-11
 ms.topic: how-to
 keywords:
   - user guide
@@ -70,17 +70,31 @@ README catalog. Stop the fleet with `docker compose down`.
 
 ## Deploy to Azure
 
-### Create prerequisites
+### Choose the deployment path
 
-1. Create a dedicated Central US resource group.
-2. Create or select an Azure Container Registry.
-3. Create a user-assigned managed identity.
-4. Grant `AcrPull` on the registry to the workload identity.
-5. Build and push the image.
-6. Copy and edit `infra/main.bicepparam`.
-7. Store the demonstration key outside source control.
+Use `infra/mvp/foundation.bicep` and `infra/mvp/workload.bicep` for a new
+evaluation. The complete MVP deployment creates the resource group, budget,
+registry, workload identity, observability resources, Container Apps environment,
+15 applications, representative alerts, and availability tests.
 
-### Preview and deploy
+Use `infra/main.bicep` only when the registry and workload identity already exist.
+
+### Deploy the complete MVP
+
+1. Copy `infra/mvp/foundation.bicepparam` to an environment-specific file.
+2. Replace owner, email, cost center, budget date, and expiry placeholders.
+3. Run a subscription-scope what-if for `foundation.bicep`.
+4. Deploy the foundation and capture its outputs.
+5. Build the shared image in the output registry with `az acr build`.
+6. Run a resource-group what-if for `workload.bicep`.
+7. Supply the demonstration key through `DEMO_API_KEY`.
+8. Deploy the workload using the foundation output names.
+9. Verify application URLs, telemetry, availability tests, and alerts.
+
+The complete commands and output mappings are in
+`infra/mvp/README.md`.
+
+### Deploy with existing resources
 
 ```powershell
 az deployment group what-if `
@@ -101,15 +115,16 @@ shared observability resources.
 
 ## Configure Azure SRE Agent
 
-1. Deploy one agent using the official `microsoft/sre-agent` IaC templates.
+1. Deploy one agent using the official `microsoft/sre-agent` Bicep template.
 2. Connect this GitHub repository.
-3. Connect the showcase Application Insights resource.
+3. Map the MVP foundation Application Insights application ID and resource ID.
 4. Grant the agent Reader access to the showcase resource group.
-5. Connect Azure Monitor as the incident platform.
-6. Add a response plan filtered to `SRE-SHOWCASE` alerts.
-7. Select Review mode.
-8. Add global tool policy that denies deletion and secret retrieval.
-9. Set an active-flow AAU allocation limit.
+5. Map the MVP foundation Log Analytics resource ID.
+6. Connect Azure Monitor as the incident platform.
+7. Add a response plan filtered to `SRE-SHOWCASE` alerts.
+8. Select Review mode.
+9. Add global tool policy that denies deletion and secret retrieval.
+10. Set an active-flow AAU allocation limit.
 
 ## Run an incident scenario
 
