@@ -2,13 +2,13 @@
 title: Enterprise SRE Agent Business Specification
 description: Business case, outcomes, stakeholders, operating model, and adoption requirements
 author: Enterprise SRE Platform Team
-ms.date: 2026-10-10
+ms.date: 2026-10-11
 ms.topic: concept
 keywords:
   - business specification
   - azure sre agent
   - enterprise adoption
-estimated_reading_time: 18
+estimated_reading_time: 25
 ---
 
 ## Business vision
@@ -113,11 +113,23 @@ path from customer intent through stock reservation and warehouse dispatch.
 These scenarios test cross-service dependency reasoning and customer conversion
 impact.
 
+| Business case | Application details | Expected outcome | How Azure SRE Agent helps |
+|---------------|---------------------|------------------|---------------------------|
+| Retail Checkout | Processes synthetic purchases and depends on payment authorization. Its 99.95 percent availability and 450 ms latency objectives protect the point where customer intent becomes revenue. | Identify payment dependency loss without confusing it with process failure. Recover checkout, complete three synthetic purchases below 450 ms, and avoid unauthorized payment-provider changes. | Correlates HTTP 503 responses, request telemetry, revision state, business impact, source, and the checkout runbook. It presents an evidence-backed cause, asks for approval, and verifies the complete checkout journey after recovery. |
+| Inventory Service | Reserves stock for checkout and fulfillment through the simulated `inventory-database` dependency. Incorrect or unavailable reservations can reject valid orders or allow overselling. | Distinguish a healthy application from database dependency failure. Restore a synthetic reservation below 500 ms and confirm checkout and fulfillment no longer report correlated failures. | Connects dependency-unavailable logs, failed business metrics, health probes, and adjacent-service impact. It recommends a reversible response without changing quantities or accessing customer orders. |
+| Order Fulfillment | Dispatches paid orders to warehouses through the `fulfillment-queue` context. Application errors delay already-paid orders and threaten warehouse commitments. | Identify whether dispatch errors originate in application code, a revision, or the queue boundary. Restore dispatch below 800 ms without replaying production orders. | Correlates HTTP 500 errors with revision and deployment evidence, checks queue context, and proposes fault clearing or rollback only when supported by evidence. It verifies repeated synthetic dispatches after approval. |
+
 ### Financial services
 
 Payments API, Banking Ledger, and Claims Processing represent latency-sensitive,
 high-availability, and regulated workflows. These scenarios emphasize cautious
 permissions, audit evidence, and data boundaries.
+
+| Business case | Application details | Expected outcome | How Azure SRE Agent helps |
+|---------------|---------------------|------------------|---------------------------|
+| Payments API | Authorizes synthetic payments against a latency-sensitive card-processor context. The service targets 99.99 percent availability and authorization below 300 ms. | Detect a latency SLO breach even when requests return HTTP 200. Restore three synthetic authorizations below 300 ms with no error regression or payment-data exposure. | Compares request duration, fault state, revision history, probes, and platform utilization. It excludes unsupported processor claims, protects cardholder boundaries, proposes the bounded recovery, and produces an auditable verification report. |
+| Banking Ledger | Posts synthetic ledger entries with strict readiness and audit expectations. An unhealthy revision can interrupt balance updates and regulated transaction processing. | Separate liveness from readiness, identify the affected revision, and restore a synthetic ledger operation below 250 ms without accessing ledger records. | Uses probe history, replica and revision events, deployment context, and business telemetry to recommend fault clearing or approved traffic removal. It never requests balance, transaction, credential, or database-write access. |
+| Claims Processing | Accepts synthetic insurance claims and depends on a document service. Dependency loss stops claim intake and increases policyholder resolution time. | Diagnose document-service unavailability, restore a synthetic claim below 1,000 ms, and prove that no documents or personal data entered the investigation. | Correlates HTTP 503 responses, dependency logs, healthy probes, and the claims runbook. It preserves regulated-data boundaries and avoids unsafe replay or document retrieval. |
 
 ### Customer experience
 
@@ -125,17 +137,35 @@ Patient Scheduling, Airline Reservation, and Media Streaming represent direct
 customer journeys where latency or errors quickly affect demand, trust, and
 support volume.
 
+| Business case | Application details | Expected outcome | How Azure SRE Agent helps |
+|---------------|---------------------|------------------|---------------------------|
+| Patient Scheduling | Books synthetic appointments against provider-calendar availability. Slow booking reduces access to care and shifts demand to the contact center. | Detect sustained latency before full outage, restore three bookings below 600 ms, and keep all patient and clinical data outside telemetry. | Correlates request percentiles, calendar context, revision state, and resource utilization. It explains patient-access impact, proposes a governed recovery, and validates bookings without retrieving protected health information. |
+| Airline Reservation | Creates synthetic seat reservations against seat-inventory context. Errors prevent purchase completion and can create inconsistent capacity views. | Isolate application or revision failure, restore three reservations below 700 ms, and avoid booking replay or inventory mutation. | Connects HTTP 500 errors with operation traces, active revision, deployment history, and inventory context. It proposes only reversible recovery and explicitly excludes passenger data, fare changes, and replay. |
+| Media Streaming | Starts synthetic playback sessions through content-delivery context. Startup delay drives viewer abandonment even when the request eventually succeeds. | Detect p95 startup latency above 350 ms, restore three sessions below the objective, and avoid increasing playback errors. | Compares request duration, revision behavior, compute saturation, and CDN context. It explains experience impact and confirms sustained latency recovery without accessing viewing history or content keys. |
+
 ### Industrial and data
 
 Logistics Tracking, IoT Ingestion, and Data Pipeline represent event streams,
 telemetry ingestion, and data freshness. These scenarios test dependency
 correlation without operating real queues or warehouses.
 
+| Business case | Application details | Expected outcome | How Azure SRE Agent helps |
+|---------------|---------------------|------------------|---------------------------|
+| Logistics Tracking | Records synthetic shipment locations through tracking-event-stream context. Failed updates create stale visibility and hide delivery exceptions. | Identify stream dependency loss, restore three location updates below 900 ms, and confirm freshness resumes without replaying external events. | Correlates HTTP 503 responses, stream context, revision health, and freshness impact. It recommends bounded recovery while excluding real shipment locations, stream purge, and replay. |
+| IoT Ingestion | Accepts synthetic device telemetry and represents the entry point for manufacturing and predictive-maintenance signals. Ingestion errors create data gaps. | Identify application or revision error, restore three telemetry operations below 400 ms, and keep production device data outside the exercise. | Correlates ingestion errors with revision and event-hub context, explains maintenance impact, and proposes safe recovery without changing partitions or accessing factory payloads. |
+| Data Pipeline | Starts synthetic analytical jobs against warehouse context. Dependency failure makes reports and machine-learning features stale. | Diagnose warehouse unavailability, restore a synthetic job start below 1,500 ms, and avoid modifying or retrying real jobs. | Combines HTTP 503 evidence, warehouse context, health probes, revision events, and freshness impact. It proposes a reversible action and verifies recovery without querying warehouse data. |
+
 ### Digital platforms
 
 Identity Access, Collaboration API, and AI Inference Gateway represent shared
 services with broad blast radius. These scenarios emphasize platform dependency,
 provider availability, and access continuity.
+
+| Business case | Application details | Expected outcome | How Azure SRE Agent helps |
+|---------------|---------------------|------------------|---------------------------|
+| Identity Access | Evaluates synthetic access requests through identity-provider context. Readiness loss can block every dependent protected application. | Distinguish readiness failure from process failure, restore an access evaluation below 200 ms, and preserve identity and token confidentiality. | Uses liveness, readiness, revision, replica, and deployment evidence to propose fault clearing or approved traffic removal. It never requests tokens, identities, group membership, or directory roles. |
+| Collaboration API | Publishes synthetic messages through message-broker context. Latency delays time-sensitive collaboration and notifications while requests may still succeed. | Detect publish latency above 300 ms, restore three messages below the objective, and avoid message-content or queue access. | Correlates request duration, broker context, revision state, and platform capacity. It proposes governed recovery and validates performance without reading messages or purging queues. |
+| AI Inference Gateway | Routes synthetic inference requests to model-endpoint context while enforcing provider, policy, and cost boundaries. Endpoint loss stalls AI-assisted workflows. | Identify endpoint dependency failure, restore three inference operations below 1,200 ms, and preserve prompt, output, safety, and credential boundaries. | Correlates HTTP 503 responses, gateway health, revision evidence, and model-endpoint context. It recommends bounded recovery without switching providers, deploying models, or accessing prompts and outputs. |
 
 ## Key performance indicators
 
@@ -220,4 +250,3 @@ The business evaluation package consists of:
 * Security and governance baseline
 * Automated tests, infrastructure templates, and CI
 * Pilot scorecard and adoption gate definitions
-
