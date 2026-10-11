@@ -56,6 +56,10 @@ The public pricing page lists monthly grants of 180,000 vCPU-seconds, 360,000
 GiB-seconds, and 2 million requests. Scale-to-zero applications have no replica
 compute charge while stopped. The environment meter can still apply.
 
+Keeping all 15 applications warm at 0.25 vCPU and 0.5 GiB each is approximately
+$0.12 per hour at the listed idle rates, before free grants. An eight-hour event
+is approximately $0.97. A full 730-hour month is approximately $88.70.
+
 ### Azure Monitor and Log Analytics
 
 Central US retail meters used by this model:
@@ -213,4 +217,3 @@ logs =
 * [Azure Monitor pricing](https://azure.microsoft.com/en-us/pricing/details/monitor/)
 * [Azure Retail Prices API](https://prices.azure.com/)
 * [Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/)
-

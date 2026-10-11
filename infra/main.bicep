@@ -27,6 +27,13 @@ param demoApiKey string
 @description('Enable fault injection in the non-production showcase.')
 param enableFaultInjection bool = false
 
+@allowed([
+  0
+  1
+])
+@description('Minimum replicas per application. Use 1 during live demos to avoid cold starts.')
+param minimumReplicas int = 0
+
 var applicationSlugs = [
   'retail-checkout'
   'payments-api'
@@ -177,7 +184,7 @@ resource applications 'Microsoft.App/containerApps@2024-03-01' = [
           }
         ]
         scale: {
-          minReplicas: 0
+          minReplicas: minimumReplicas
           maxReplicas: 2
           rules: [
             {

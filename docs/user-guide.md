@@ -113,6 +113,12 @@ shared observability resources.
 
 ## Run an incident scenario
 
+### Prevent cold starts during a live event
+
+Set `minimumReplicas=1` during a scheduled demonstration so browser navigation
+does not time out while Azure starts a scaled-to-zero replica. Restore the value
+to `0` after the event.
+
 ### Select the scenario
 
 Choose one application based on audience priorities. Read its `scenario.json`

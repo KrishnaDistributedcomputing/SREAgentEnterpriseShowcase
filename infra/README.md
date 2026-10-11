@@ -36,6 +36,10 @@ az deployment group what-if `
 
 Review resource creation, identity assignments, public ingress, and expected cost.
 
+Set `minimumReplicas` to `1` for a scheduled live demonstration where cold-start
+latency would disrupt the audience experience. Return it to `0` afterward to
+restore scale-to-zero behavior.
+
 ## Deploy
 
 ```powershell
@@ -56,4 +60,3 @@ az group delete --name "rg-sre-showcase-demo"
 
 Use deletion only as a facilitator cleanup action. Global Azure SRE Agent tool
 policy should deny resource deletion during incident demonstrations.
-
