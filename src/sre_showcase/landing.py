@@ -59,13 +59,14 @@ PORTFOLIO_ORDER = [
 
 def _application_url(request: Request, current_slug: str, target_slug: str) -> str:
     parsed = urlsplit(str(request.base_url))
+    scheme = "https" if parsed.hostname and parsed.hostname.endswith(".azurecontainerapps.io") else parsed.scheme
     expected_prefix = f"ca-{current_slug}-"
     if parsed.hostname and parsed.hostname.startswith(expected_prefix):
         target_host = f"ca-{target_slug}-{parsed.hostname.removeprefix(expected_prefix)}"
         if parsed.port:
             target_host = f"{target_host}:{parsed.port}"
-        return urlunsplit((parsed.scheme, target_host, "/", "", ""))
-    return urlunsplit((parsed.scheme, parsed.netloc, "/", "", ""))
+        return urlunsplit((scheme, target_host, "/", "", ""))
+    return urlunsplit((scheme, parsed.netloc, "/", "", ""))
 
 
 def _render_rows(

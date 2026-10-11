@@ -39,6 +39,20 @@ def test_fault_injection_requires_enablement(monkeypatch: pytest.MonkeyPatch) ->
     assert response.status_code == 404
 
 
+def test_azure_landing_links_use_https() -> None:
+    base_url = (
+        "http://ca-retail-checkout-demowus2."
+        "example.westus2.azurecontainerapps.io"
+    )
+    with TestClient(create_app("retail-checkout"), base_url=base_url) as client:
+        response = client.get("/")
+
+    assert (
+        "https://ca-inventory-service-demowus2."
+        "example.westus2.azurecontainerapps.io/"
+    ) in response.text
+
+
 def test_fault_injection_changes_and_recovers_behavior(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
