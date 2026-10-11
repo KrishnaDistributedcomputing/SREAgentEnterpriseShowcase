@@ -27,6 +27,24 @@ prevents self-service booking and increases contact-center demand.
 The latency fault preserves successful health probes and status codes. The
 incident is visible through request duration and business telemetry.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Patient[Patient Channel] -->|Book appointment| App[Patient Scheduling]
+    App -->|Check availability| Dependency[Provider Calendar]
+    App -->|Booking result| Patient
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Latency alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The patient journey depends on provider-calendar responsiveness. Azure SRE Agent
+uses operational timing evidence without accessing patient, appointment, or
+clinical records.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates latency telemetry, calendar dependency spans, revision

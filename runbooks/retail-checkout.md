@@ -28,6 +28,24 @@ The dependency fault produces HTTP 503 responses while process health can remain
 normal. This demonstrates why service health alone is insufficient evidence of
 a functioning customer journey.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Customer[Customer] -->|Submit purchase| App[Retail Checkout]
+    App -->|Authorize payment| Dependency[Payment Authorization]
+    App -->|Checkout result| Order[Order Processing]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The transaction path shows how payment authorization affects completed purchases.
+The operations path gives Azure SRE Agent evidence without allowing it to process
+payments or bypass operator approval.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent assembles the alert, request traces, business-operation metric,

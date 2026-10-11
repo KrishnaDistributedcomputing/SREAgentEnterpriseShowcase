@@ -27,6 +27,24 @@ creates data gaps and delays detection of equipment risk.
 The fault returns HTTP 500 from ingestion while health probes may remain normal.
 The showcase uses synthetic devices and contains no factory data.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Device[Factory Device] -->|Send telemetry| App[IoT Ingestion]
+    App -->|Publish event| Dependency[Device Event Hub]
+    Dependency -->|Supply signals| Maintenance[Predictive Maintenance]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The ingestion path supplies downstream maintenance signals. Azure SRE Agent
+correlates application, revision, and stream evidence without accessing real
+factory payloads or changing event partitions.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates ingestion errors with operation traces, revision

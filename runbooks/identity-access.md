@@ -27,6 +27,24 @@ employees and customers from reaching protected systems.
 The not-ready fault fails readiness while process liveness remains successful.
 The showcase evaluates synthetic identities and does not issue real tokens.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    User[Employee or Customer] -->|Request access| App[Identity Access]
+    App -->|Validate identity| Dependency[Identity Provider]
+    App -->|Access decision| Protected[Protected Application]
+    App -->|Probes, traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Readiness alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved traffic action| App
+```
+
+The access path has a broad application blast radius. Azure SRE Agent uses probe
+and revision evidence without reading identities, tokens, group membership, or
+access policy.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates probe history, revision health, deployment events, and

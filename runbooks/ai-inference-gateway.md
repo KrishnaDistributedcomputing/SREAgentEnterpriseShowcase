@@ -27,6 +27,24 @@ and cost boundaries. Endpoint loss stalls dependent business processes.
 The dependency fault returns HTTP 503 while gateway health may remain successful.
 Prompts and outputs are synthetic and are not persisted.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Workflow[AI-assisted Workflow] -->|Inference request| App[AI Inference Gateway]
+    App -->|Policy-controlled request| Dependency[Model Endpoint]
+    App -->|Inference result| Workflow
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The inference path keeps provider access behind the gateway. Azure SRE Agent
+investigates endpoint and revision evidence without reading prompts, changing
+models, or bypassing safety and cost controls.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates failed inference traces with endpoint health, gateway

@@ -27,6 +27,24 @@ delay paid orders and can cause warehouse service-level commitments to be missed
 The error fault returns HTTP 500 from the business operation. Health probes may
 remain successful, which separates transaction failure from platform readiness.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Commerce[Commerce Order] -->|Dispatch paid order| App[Order Fulfillment]
+    App -->|Publish dispatch| Dependency[Fulfillment Queue]
+    Dependency -->|Deliver work| Warehouse[Warehouse]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The business path carries paid orders to warehouse execution. The investigation
+path lets Azure SRE Agent correlate dispatch failures with revisions and queue
+evidence before an operator approves recovery.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates dispatch errors with request traces, active revisions,

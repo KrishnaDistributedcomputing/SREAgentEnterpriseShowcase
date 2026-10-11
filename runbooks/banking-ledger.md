@@ -28,6 +28,24 @@ The not-ready fault fails readiness while liveness remains successful. Azure
 Container Apps should remove the unhealthy replica from traffic without treating
 the process as crashed.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Transaction[Transaction Service] -->|Post entry| App[Banking Ledger]
+    App -->|Record entry| Dependency[(Ledger Database)]
+    App -->|Balance update result| Transaction
+    App -->|Probes, traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Readiness alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved traffic action| App
+```
+
+The data path represents regulated ledger processing. The operations path limits
+Azure SRE Agent to probe, revision, and telemetry evidence, with no access to
+ledger records.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent uses probe history, revision state, replica events, request

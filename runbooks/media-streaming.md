@@ -27,6 +27,24 @@ and support demand even when requests return successfully.
 The fault raises request duration while status and health remain successful,
 demonstrating an experience incident rather than an availability outage.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Viewer[Viewer Device] -->|Start playback| App[Media Streaming]
+    App -->|Request media delivery| Dependency[Content Delivery Network]
+    App -->|Playback session| Viewer
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Latency alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The viewer path makes startup latency visible as a customer-experience concern.
+Azure SRE Agent compares application and CDN timing without accessing viewing
+history or changing content-delivery policy.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates playback duration, dependency spans, revision state,

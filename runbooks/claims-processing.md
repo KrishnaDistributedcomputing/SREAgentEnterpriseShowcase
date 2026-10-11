@@ -27,6 +27,24 @@ stops new claims and increases the time policyholders wait for resolution.
 The dependency fault returns HTTP 503 while application health can remain normal.
 Only synthetic claims are permitted in the showcase.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Policyholder[Policyholder Channel] -->|Submit claim| App[Claims Processing]
+    App -->|Store supporting file| Dependency[Document Service]
+    App -->|Claim intake result| Case[Claims Case Workflow]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The claim path shows the document dependency without exposing document content.
+Azure SRE Agent receives telemetry and runbook context, while regulated-data
+access and recovery approval remain outside the agent.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates claim-submission failures with dependency traces,

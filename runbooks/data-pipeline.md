@@ -27,6 +27,24 @@ learning features. A warehouse outage creates stale business information.
 The dependency fault returns HTTP 503 while application probes can remain healthy.
 Only synthetic jobs and a simulated dependency are in scope.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Scheduler[Job Scheduler] -->|Start analytical job| App[Data Pipeline]
+    App -->|Read or write data| Dependency[(Analytics Warehouse)]
+    Dependency -->|Refresh outputs| Consumer[Reports and ML Features]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The data path connects scheduled processing to downstream freshness. Azure SRE
+Agent investigates warehouse dependency evidence without querying data or
+modifying production jobs.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates job-start failures with warehouse spans, resource

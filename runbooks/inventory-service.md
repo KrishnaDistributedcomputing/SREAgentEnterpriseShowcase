@@ -29,6 +29,24 @@ The process can remain live and ready while the database dependency returns an
 error. This distinction helps operators avoid restarting a healthy application
 when the actual failure is downstream.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Checkout[Retail Checkout] -->|Reserve stock| App[Inventory Service]
+    App -->|Read and reserve| Dependency[(Inventory Database)]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+    App -->|Reservation result| Fulfillment[Order Fulfillment]
+```
+
+The diagram separates the customer order path from the observability and
+governance path. Azure SRE Agent investigates through telemetry and repository
+context, while the operator retains approval authority for recovery.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent connects the Azure Monitor alert to application telemetry,

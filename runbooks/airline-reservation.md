@@ -27,6 +27,24 @@ can leave fare or capacity views inconsistent.
 The fault returns HTTP 500 while health probes can remain successful. No external
 booking system or real traveler information is connected.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Traveler[Traveler Channel] -->|Reserve seat| App[Airline Reservation]
+    App -->|Check and hold seat| Dependency[Seat Inventory]
+    App -->|Reservation result| Traveler
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The transaction path captures the relationship between booking and seat capacity.
+Azure SRE Agent investigates error and revision evidence without accessing
+traveler information or changing inventory.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates reservation errors with operation traces, active

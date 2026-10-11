@@ -28,6 +28,24 @@ The latency fault keeps status and health successful while request duration
 exceeds the objective. Operators must evaluate customer experience, not only
 HTTP status.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Merchant[Merchant or Checkout] -->|Authorize transaction| App[Payments API]
+    App -->|Authorization request| Dependency[Card Processor]
+    App -->|Decision| Merchant
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Latency alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The payment path remains isolated from the operational path. Azure SRE Agent uses
+timing and dependency evidence without reading cardholder data or changing the
+processor.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates duration metrics, traces, revision state, resource

@@ -27,6 +27,24 @@ stop, locations become stale and delayed deliveries can go unnoticed.
 The dependency fault returns HTTP 503 while process health may remain normal.
 Only synthetic shipment and location data is used.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Vehicle[Vehicle or Scanner] -->|Location update| App[Logistics Tracking]
+    App -->|Publish event| Dependency[Tracking Event Stream]
+    Dependency -->|Update visibility| Operations[Logistics Operations]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The event path updates shipment visibility. Azure SRE Agent evaluates service and
+stream evidence without reading real shipment locations or replaying external
+events.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent connects request failures, dependency traces, revision state,

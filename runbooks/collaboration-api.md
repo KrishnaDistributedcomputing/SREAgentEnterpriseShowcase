@@ -27,6 +27,24 @@ time-sensitive communication even if publishing eventually succeeds.
 The latency fault keeps status codes and probes successful. Request and dependency
 duration provide the primary incident evidence.
 
+## Application architecture
+
+```mermaid
+flowchart LR
+    Client[Collaboration Client] -->|Publish message| App[Collaboration API]
+    App -->|Enqueue message| Dependency[Message Broker]
+    Dependency -->|Deliver message| Recipient[Recipient or Notification]
+    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
+    Monitor -->|Latency alert and evidence| Agent[Azure SRE Agent]
+    Runbook[GitHub runbook and source] -->|Operational context| Agent
+    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
+    Operator -->|Approved recovery| App
+```
+
+The messaging path shows where broker delay affects collaboration. Azure SRE
+Agent uses duration and capacity evidence without reading message bodies or
+purging queued content.
+
 ## Where Azure SRE Agent plays a role
 
 Azure SRE Agent correlates publishing duration with broker spans, revision state,
