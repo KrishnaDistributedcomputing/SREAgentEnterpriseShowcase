@@ -27,18 +27,40 @@ prevents self-service booking and increases contact-center demand.
 The latency fault preserves successful health probes and status codes. The
 incident is visible through request duration and business telemetry.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Patient[Patient Channel] -->|Book appointment| App[Patient Scheduling]
-    App -->|Check availability| Dependency[Provider Calendar]
-    App -->|Booking result| Patient
-    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Latency alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved recovery| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        Patient["Patient Channel"]
+        App["Patient Scheduling<br/>Azure Container App"]
+        Calendar["Provider Calendar"]
+        Patient -->|"Book appointment"| App
+        App -->|"Check availability"| Calendar
+        App -->|"Booking result"| Patient
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Latency alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved recovery"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Patient,Calendar,Operator,Repository external
 ```
 
 The patient journey depends on provider-calendar responsiveness. Azure SRE Agent

@@ -27,18 +27,40 @@ and cost boundaries. Endpoint loss stalls dependent business processes.
 The dependency fault returns HTTP 503 while gateway health may remain successful.
 Prompts and outputs are synthetic and are not persisted.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Workflow[AI-assisted Workflow] -->|Inference request| App[AI Inference Gateway]
-    App -->|Policy-controlled request| Dependency[Model Endpoint]
-    App -->|Inference result| Workflow
-    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved recovery| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        Workflow["AI-assisted Workflow"]
+        App["AI Inference Gateway<br/>Azure Container App"]
+        Endpoint["Model Endpoint"]
+        Workflow -->|"Inference request"| App
+        App -->|"Policy-controlled request"| Endpoint
+        App -->|"Inference result"| Workflow
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved recovery"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Workflow,Endpoint,Operator,Repository external
 ```
 
 The inference path keeps provider access behind the gateway. Azure SRE Agent

@@ -28,18 +28,40 @@ The latency fault keeps status and health successful while request duration
 exceeds the objective. Operators must evaluate customer experience, not only
 HTTP status.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Merchant[Merchant or Checkout] -->|Authorize transaction| App[Payments API]
-    App -->|Authorization request| Dependency[Card Processor]
-    App -->|Decision| Merchant
-    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Latency alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved recovery| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        Merchant["Merchant or Checkout"]
+        App["Payments API<br/>Azure Container App"]
+        Processor["Card Processor"]
+        Merchant -->|"Authorize transaction"| App
+        App -->|"Authorization request"| Processor
+        App -->|"Authorization decision"| Merchant
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Latency alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved recovery"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Merchant,Processor,Operator,Repository external
 ```
 
 The payment path remains isolated from the operational path. Azure SRE Agent uses

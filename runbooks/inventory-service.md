@@ -29,18 +29,41 @@ The process can remain live and ready while the database dependency returns an
 error. This distinction helps operators avoid restarting a healthy application
 when the actual failure is downstream.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Checkout[Retail Checkout] -->|Reserve stock| App[Inventory Service]
-    App -->|Read and reserve| Dependency[(Inventory Database)]
-    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved recovery| App
-    App -->|Reservation result| Fulfillment[Order Fulfillment]
+    subgraph Business["Business transaction path"]
+        direction LR
+        Checkout["Retail Checkout"]
+        App["Inventory Service<br/>Azure Container App"]
+        Database[("Inventory Database")]
+        Fulfillment["Order Fulfillment"]
+        Checkout -->|"Reserve stock"| App
+        App -->|"Read and reserve"| Database
+        App -->|"Reservation result"| Fulfillment
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved recovery"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Checkout,Database,Fulfillment,Operator,Repository external
 ```
 
 The diagram separates the customer order path from the observability and

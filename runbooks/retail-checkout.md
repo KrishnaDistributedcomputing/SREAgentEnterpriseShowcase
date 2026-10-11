@@ -28,18 +28,41 @@ The dependency fault produces HTTP 503 responses while process health can remain
 normal. This demonstrates why service health alone is insufficient evidence of
 a functioning customer journey.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Customer[Customer] -->|Submit purchase| App[Retail Checkout]
-    App -->|Authorize payment| Dependency[Payment Authorization]
-    App -->|Checkout result| Order[Order Processing]
-    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved recovery| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        Customer["Customer"]
+        App["Retail Checkout<br/>Azure Container App"]
+        Payment["Payment Authorization"]
+        Order["Order Processing"]
+        Customer -->|"Submit purchase"| App
+        App -->|"Authorize payment"| Payment
+        App -->|"Checkout result"| Order
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved recovery"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Customer,Payment,Order,Operator,Repository external
 ```
 
 The transaction path shows how payment authorization affects completed purchases.

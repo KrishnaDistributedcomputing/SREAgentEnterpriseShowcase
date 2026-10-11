@@ -27,18 +27,41 @@ employees and customers from reaching protected systems.
 The not-ready fault fails readiness while process liveness remains successful.
 The showcase evaluates synthetic identities and does not issue real tokens.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    User[Employee or Customer] -->|Request access| App[Identity Access]
-    App -->|Validate identity| Dependency[Identity Provider]
-    App -->|Access decision| Protected[Protected Application]
-    App -->|Probes, traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Readiness alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved traffic action| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        User["Employee or Customer"]
+        App["Identity Access<br/>Azure Container App"]
+        Provider["Identity Provider"]
+        Protected["Protected Application"]
+        User -->|"Request access"| App
+        App -->|"Validate identity"| Provider
+        App -->|"Access decision"| Protected
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Readiness alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved traffic action"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class User,Provider,Protected,Operator,Repository external
 ```
 
 The access path has a broad application blast radius. Azure SRE Agent uses probe

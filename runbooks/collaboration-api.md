@@ -27,18 +27,41 @@ time-sensitive communication even if publishing eventually succeeds.
 The latency fault keeps status codes and probes successful. Request and dependency
 duration provide the primary incident evidence.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Client[Collaboration Client] -->|Publish message| App[Collaboration API]
-    App -->|Enqueue message| Dependency[Message Broker]
-    Dependency -->|Deliver message| Recipient[Recipient or Notification]
-    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Latency alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved recovery| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        Client["Collaboration Client"]
+        App["Collaboration API<br/>Azure Container App"]
+        Broker["Message Broker"]
+        Recipient["Recipient or Notification"]
+        Client -->|"Publish message"| App
+        App -->|"Enqueue message"| Broker
+        Broker -->|"Deliver message"| Recipient
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Latency alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved recovery"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Client,Broker,Recipient,Operator,Repository external
 ```
 
 The messaging path shows where broker delay affects collaboration. Azure SRE

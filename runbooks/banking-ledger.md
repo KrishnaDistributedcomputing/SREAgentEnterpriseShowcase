@@ -28,18 +28,40 @@ The not-ready fault fails readiness while liveness remains successful. Azure
 Container Apps should remove the unhealthy replica from traffic without treating
 the process as crashed.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Transaction[Transaction Service] -->|Post entry| App[Banking Ledger]
-    App -->|Record entry| Dependency[(Ledger Database)]
-    App -->|Balance update result| Transaction
-    App -->|Probes, traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Readiness alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved traffic action| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        Transaction["Transaction Service"]
+        App["Banking Ledger<br/>Azure Container App"]
+        Database[("Ledger Database")]
+        Transaction -->|"Post entry"| App
+        App -->|"Record entry"| Database
+        App -->|"Balance update result"| Transaction
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Readiness alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved traffic action"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Transaction,Database,Operator,Repository external
 ```
 
 The data path represents regulated ledger processing. The operations path limits

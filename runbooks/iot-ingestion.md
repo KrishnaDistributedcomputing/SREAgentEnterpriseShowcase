@@ -27,18 +27,41 @@ creates data gaps and delays detection of equipment risk.
 The fault returns HTTP 500 from ingestion while health probes may remain normal.
 The showcase uses synthetic devices and contains no factory data.
 
-## Application architecture
+## System context diagrams
 
 ```mermaid
 flowchart LR
-    Device[Factory Device] -->|Send telemetry| App[IoT Ingestion]
-    App -->|Publish event| Dependency[Device Event Hub]
-    Dependency -->|Supply signals| Maintenance[Predictive Maintenance]
-    App -->|Traces, metrics, and logs| Monitor[Azure Monitor]
-    Monitor -->|Alert and evidence| Agent[Azure SRE Agent]
-    Runbook[GitHub runbook and source] -->|Operational context| Agent
-    Agent -->|Diagnosis and proposed action| Operator[On-call operator]
-    Operator -->|Approved recovery| App
+    subgraph Business["Business transaction path"]
+        direction LR
+        Device["Factory Device"]
+        App["IoT Ingestion<br/>Azure Container App"]
+        EventHub["Device Event Hub"]
+        Maintenance["Predictive Maintenance"]
+        Device -->|"Send telemetry"| App
+        App -->|"Publish event"| EventHub
+        EventHub -->|"Supply signals"| Maintenance
+    end
+
+    subgraph Operations["Reliability and governance path"]
+        direction TB
+        Monitor["Azure Monitor<br/>Application Insights and Log Analytics"]
+        Agent["Azure SRE Agent"]
+        Operator["On-call operator"]
+        Repository["GitHub<br/>Source and runbook"]
+        Monitor -->|"Alert and evidence"| Agent
+        Repository -.->|"Operational context"| Agent
+        Agent -->|"Proposed action"| Operator
+    end
+
+    App -.->|"OpenTelemetry"| Monitor
+    Operator -->|"Approved recovery"| App
+
+    classDef application fill:#0b6b61,color:#ffffff,stroke:#064b45,stroke-width:2px
+    classDef azure fill:#e8f3f8,color:#16324f,stroke:#39789b
+    classDef external fill:#fff4df,color:#5b3a11,stroke:#d78a32
+    class App application
+    class Monitor,Agent azure
+    class Device,EventHub,Maintenance,Operator,Repository external
 ```
 
 The ingestion path supplies downstream maintenance signals. Azure SRE Agent
