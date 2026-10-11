@@ -51,7 +51,8 @@ uv run uvicorn sre_showcase.app:create_app_from_environment --factory --port 808
 
 Open:
 
-* `http://localhost:8080/` for business and SLO context
+* `http://localhost:8080/` for the fleet landing page and application table
+* `http://localhost:8080/api/metadata` for current application and SLO context
 * `http://localhost:8080/docs` for interactive API documentation
 * `http://localhost:8080/health/ready` for readiness
 
@@ -241,4 +242,3 @@ docker compose config --quiet
 4. Remove temporary connector authorization.
 5. Delete the dedicated resource group when retention is not required.
 6. Delete the agent to stop always-on billing when the evaluation is complete.
-

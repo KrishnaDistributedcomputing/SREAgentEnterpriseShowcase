@@ -12,7 +12,11 @@ SCENARIOS = list_scenarios()
 @pytest.mark.parametrize("slug", [scenario.slug for scenario in SCENARIOS])
 def test_application_contract(slug: str) -> None:
     with TestClient(create_app(slug)) as client:
-        assert client.get("/").status_code == 200
+        landing = client.get("/")
+        assert landing.status_code == 200
+        assert landing.headers["content-type"].startswith("text/html")
+        assert "Azure SRE Agent Enterprise Showcase" in landing.text
+        assert client.get("/api/metadata").status_code == 200
         assert client.get("/health/live").json() == {"status": "alive"}
         assert client.get("/health/ready").json() == {"status": "ready"}
 
@@ -54,4 +58,3 @@ def test_fault_injection_changes_and_recovers_behavior(
     assert failed.status_code == 500
     assert cleared.json()["mode"] == "none"
     assert recovered.status_code == 200
-

@@ -132,7 +132,8 @@ sequenceDiagram
 
 | Method | Path | Purpose | Authentication |
 |--------|------|---------|----------------|
-| GET | `/` | Scenario and business metadata | None |
+| GET | `/` | Fleet landing page and application table | None |
+| GET | `/api/metadata` | Scenario and business metadata | None |
 | GET | `/health/live` | Process health | None |
 | GET | `/health/ready` | Traffic readiness | None |
 | POST | `/work` | Synthetic business operation | None in showcase |
@@ -250,4 +251,3 @@ deployment definitions. A live smoke test verifies real HTTP behavior.
 * Docker build requires a running Docker daemon.
 * Azure end-to-end acceptance requires a subscription and deployed agent.
 * Costs and product interfaces must be revalidated before each enterprise event.
-

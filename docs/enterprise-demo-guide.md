@@ -44,8 +44,8 @@ Complete these checks before the audience joins:
 ### Minute 0 through 3: Establish business context
 
 Choose Retail Checkout for a broad audience or a domain-specific sample for a
-customer. Open the metadata endpoint and identify the SLO, dependency, runbook,
-and stated business impact.
+customer. Open the landing page, select the application, then inspect its metadata
+endpoint to identify the SLO, dependency, runbook, and stated business impact.
 
 ### Minute 3 through 6: Establish governance
 
@@ -127,4 +127,3 @@ Record the scenario, alert time, investigation start, probable cause, proposed
 action, approver, execution time, recovery time, and open follow-up. Compare
 these values across repeated runs to measure improvement rather than relying on
 anecdotal impressions.
-

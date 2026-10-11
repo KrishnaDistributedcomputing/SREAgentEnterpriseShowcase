@@ -8,12 +8,14 @@ import os
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import FastAPI, Header, HTTPException, Query, status
+from fastapi import FastAPI, Header, HTTPException, Query, Request, status
+from fastapi.responses import HTMLResponse
 from opentelemetry import metrics
 from pydantic import BaseModel, Field
 
-from .catalog import FaultMode, load_scenario
+from .catalog import FaultMode, list_scenarios, load_scenario
 from .faults import MAX_FAULT_SECONDS, FaultController, FaultSnapshot
+from .landing import render_landing_page
 from .telemetry import configure_telemetry
 
 logger = logging.getLogger(__name__)
@@ -64,7 +66,11 @@ def create_app(slug: str) -> FastAPI:
         description="Synthetic business operations by outcome",
     )
 
-    @app.get("/", tags=["metadata"])
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    async def landing(request: Request) -> HTMLResponse:
+        return HTMLResponse(render_landing_page(request, scenario, list_scenarios()))
+
+    @app.get("/api/metadata", tags=["metadata"])
     async def metadata() -> dict[str, object]:
         return {
             "slug": scenario.slug,
