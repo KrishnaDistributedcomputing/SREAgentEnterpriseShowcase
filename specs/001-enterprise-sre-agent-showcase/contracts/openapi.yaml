@@ -16,6 +16,12 @@ paths:
       responses:
         "200":
           description: Scenario identity, SLO, business impact, and runbook
+  /app:
+    get:
+      summary: Open the application-specific detail page
+      responses:
+        "200":
+          description: HTML service context, SLO, incident, and SRE Agent value
   /health/live:
     get:
       summary: Get process liveness

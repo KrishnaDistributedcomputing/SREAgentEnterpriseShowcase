@@ -110,7 +110,7 @@ def _render_rows(
                   </td>
                   <td data-label="Links">
                     <div class="actions">
-                      <a class="action primary" href="{escape(application_url)}">Open app</a>
+                      <a class="action primary" href="{escape(application_url)}app">Open app</a>
                       <a class="action" href="{escape(application_url)}docs">API</a>
                       <a class="action" href="{escape(runbook_url)}">Runbook</a>
                     </div>
@@ -387,6 +387,229 @@ def render_landing_page(
       <span>Fault injection is disabled on the public deployment. Applications scale to zero.</span>
       <a href="{REPOSITORY_URL}">View specifications and source on GitHub</a>
     </footer>
+  </main>
+</body>
+</html>"""
+
+
+def render_application_page(request: Request, scenario: AppScenario) -> str:
+    """Render an application-specific detail page."""
+    application_url = _application_url(request, scenario.slug, scenario.slug)
+    runbook_url = f"{REPOSITORY_URL}/blob/main/{scenario.runbook}"
+    portfolio = PORTFOLIOS[scenario.slug]
+    sre_value = SRE_AGENT_VALUE[scenario.slug]
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{escape(scenario.description)}">
+  <title>{escape(scenario.name)} | SRE Agent Showcase</title>
+  <style>
+    :root {{
+      --ink: #162b2a;
+      --muted: #5d6f6d;
+      --paper: #f7f5ee;
+      --surface: rgba(255,255,255,.84);
+      --line: rgba(22,43,42,.12);
+      --brand: #0b6b61;
+      --brand-dark: #064b45;
+      --accent: #d78a32;
+      --shadow: 0 1px 2px rgba(10,75,69,.05), 0 18px 50px rgba(10,75,69,.10);
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 5%, rgba(215,138,50,.17), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(11,107,97,.16), transparent 34rem),
+        linear-gradient(180deg, #fbfaf6, var(--paper));
+      font-family: "Segoe UI", Inter, Arial, sans-serif;
+      line-height: 1.6;
+    }}
+    body::before {{
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }}
+    .shell {{ width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 30px 0 72px; }}
+    header {{ display: flex; justify-content: space-between; align-items: center; gap: 20px; }}
+    .brand {{
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--ink);
+      font-weight: 750;
+      letter-spacing: -.02em;
+      text-decoration: none;
+    }}
+    .brand-mark {{
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: white;
+      background: var(--brand);
+      box-shadow: 0 8px 24px rgba(11,107,97,.24);
+    }}
+    .live {{ display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: .85rem; }}
+    .live::before {{
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #37a26c;
+      box-shadow: 0 0 0 5px rgba(55,162,108,.12);
+    }}
+    .hero {{ padding: 104px 0 58px; }}
+    .eyebrow {{
+      color: var(--brand);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }}
+    h1 {{
+      margin: 14px 0 20px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.6rem, 8vw, 7rem);
+      font-weight: 500;
+      letter-spacing: -.055em;
+      line-height: .96;
+    }}
+    .description {{ max-width: 780px; margin: 0; color: var(--muted); font-size: 1.18rem; line-height: 1.75; }}
+    .metrics {{ display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }}
+    .metric, .panel {{
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }}
+    .metric {{ padding: 22px; }}
+    .metric span {{ display: block; color: var(--muted); font-size: .7rem; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }}
+    .metric strong {{ display: block; margin-top: 7px; color: var(--brand-dark); font-family: Georgia, serif; font-size: 1.7rem; font-weight: 500; }}
+    .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }}
+    .panel {{ padding: 28px; }}
+    .panel-label {{ color: var(--accent); font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }}
+    .panel h2 {{ margin: 10px 0 12px; font-family: Georgia, serif; font-size: 1.7rem; font-weight: 500; letter-spacing: -.025em; }}
+    .panel p {{ margin: 0; color: var(--muted); }}
+    .workflow {{ margin: 22px 0; padding: 24px 28px; }}
+    .steps {{ display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-top: 18px; }}
+    .step {{ position: relative; padding-top: 32px; color: var(--muted); font-size: .76rem; }}
+    .step::before {{
+      content: attr(data-step);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--brand);
+      font-size: .68rem;
+      font-weight: 800;
+    }}
+    .actions {{ display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }}
+    .action {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      color: var(--brand-dark);
+      background: rgba(255,255,255,.72);
+      font-size: .82rem;
+      font-weight: 750;
+      text-decoration: none;
+      transition: transform 180ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease;
+    }}
+    .action.primary {{ color: white; border-color: var(--brand); background: var(--brand); }}
+    .action:hover {{ transform: translateY(-2px); }}
+    .action:active {{ transform: translateY(0) scale(.97); }}
+    .action:focus-visible {{ outline: 3px solid rgba(215,138,50,.45); outline-offset: 2px; }}
+    @media (max-width: 760px) {{
+      .shell {{ width: min(100% - 24px, 1180px); padding-top: 20px; }}
+      header {{ align-items: flex-start; }}
+      .brand {{ max-width: 160px; }}
+      .live {{ max-width: 130px; align-items: flex-start; font-size: .74rem; }}
+      .live::before {{ flex: 0 0 8px; margin-top: 5px; }}
+      .hero {{ padding: 72px 0 38px; }}
+      h1 {{ font-size: clamp(3rem, 16vw, 4.7rem); }}
+      .description {{ font-size: 1rem; }}
+      .metrics {{ grid-template-columns: 1fr 1fr; }}
+      .metric {{ padding: 18px; }}
+      .metric strong {{ font-size: 1.35rem; }}
+      .grid {{ grid-template-columns: 1fr; }}
+      .panel {{ padding: 22px; }}
+      .steps {{ grid-template-columns: 1fr 1fr 1fr; row-gap: 22px; }}
+      .actions {{ display: grid; grid-template-columns: 1fr 1fr; }}
+    }}
+    @media (prefers-reduced-motion: reduce) {{
+      .action {{ transition: none; }}
+    }}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a class="brand" href="{escape(application_url)}">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SRE Agent Showcase</span>
+      </a>
+      <div class="live">Application healthy</div>
+    </header>
+    <section class="hero">
+      <div class="eyebrow">{escape(portfolio)} · {escape(scenario.domain)}</div>
+      <h1>{escape(scenario.name)}</h1>
+      <p class="description">{escape(scenario.description)}</p>
+      <div class="actions">
+        <a class="action primary" href="{escape(application_url)}docs">Explore API</a>
+        <a class="action" href="{escape(application_url)}api/metadata">View metadata</a>
+        <a class="action" href="{escape(runbook_url)}">Open runbook</a>
+        <a class="action" href="{escape(application_url)}">All applications</a>
+      </div>
+    </section>
+    <section class="metrics" aria-label="Service objectives and incident context">
+      <div class="metric"><span>Availability SLO</span><strong>{scenario.slo_availability:.2f}%</strong></div>
+      <div class="metric"><span>Latency SLO</span><strong>&lt; {scenario.slo_latency_ms} ms</strong></div>
+      <div class="metric"><span>Fault mode</span><strong>{escape(scenario.default_fault.replace("-", " ").title())}</strong></div>
+      <div class="metric"><span>Dependency</span><strong>{escape(scenario.dependency)}</strong></div>
+    </section>
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-label">Business impact</div>
+        <h2>Why the incident matters</h2>
+        <p>{escape(scenario.business_impact)}</p>
+      </article>
+      <article class="panel">
+        <div class="panel-label">Azure SRE Agent</div>
+        <h2>How the agent helps</h2>
+        <p>{escape(sre_value)}</p>
+      </article>
+    </section>
+    <section class="panel workflow">
+      <div class="panel-label">Governed response</div>
+      <h2>From alert to verified recovery</h2>
+      <div class="steps">
+        <div class="step" data-step="1">Receive the matching Azure Monitor alert</div>
+        <div class="step" data-step="2">Correlate telemetry, source, and Azure context</div>
+        <div class="step" data-step="3">Identify probable cause and business impact</div>
+        <div class="step" data-step="4">Propose a reversible mitigation</div>
+        <div class="step" data-step="5">Request operator approval in Review mode</div>
+        <div class="step" data-step="6">Verify readiness and business traffic</div>
+      </div>
+    </section>
   </main>
 </body>
 </html>"""

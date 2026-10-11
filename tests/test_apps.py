@@ -11,11 +11,16 @@ SCENARIOS = list_scenarios()
 
 @pytest.mark.parametrize("slug", [scenario.slug for scenario in SCENARIOS])
 def test_application_contract(slug: str) -> None:
+    scenario = next(item for item in SCENARIOS if item.slug == slug)
     with TestClient(create_app(slug)) as client:
         landing = client.get("/")
         assert landing.status_code == 200
         assert landing.headers["content-type"].startswith("text/html")
         assert "Azure SRE Agent Enterprise Showcase" in landing.text
+        application_page = client.get("/app")
+        assert application_page.status_code == 200
+        assert scenario.name in application_page.text
+        assert "How the agent helps" in application_page.text
         assert client.get("/api/metadata").status_code == 200
         assert client.get("/health/live").json() == {"status": "alive"}
         assert client.get("/health/ready").json() == {"status": "ready"}
@@ -49,7 +54,7 @@ def test_azure_landing_links_use_https() -> None:
 
     assert (
         "https://ca-inventory-service-demowus2."
-        "example.westus2.azurecontainerapps.io/"
+        "example.westus2.azurecontainerapps.io/app"
     ) in response.text
 
 

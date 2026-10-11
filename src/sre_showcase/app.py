@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 from .catalog import FaultMode, list_scenarios, load_scenario
 from .faults import MAX_FAULT_SECONDS, FaultController, FaultSnapshot
-from .landing import render_landing_page
+from .landing import render_application_page, render_landing_page
 from .telemetry import configure_telemetry
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,10 @@ def create_app(slug: str) -> FastAPI:
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     async def landing(request: Request) -> HTMLResponse:
         return HTMLResponse(render_landing_page(request, scenario, list_scenarios()))
+
+    @app.get("/app", response_class=HTMLResponse, include_in_schema=False)
+    async def application_page(request: Request) -> HTMLResponse:
+        return HTMLResponse(render_application_page(request, scenario))
 
     @app.get("/api/metadata", tags=["metadata"])
     async def metadata() -> dict[str, object]:
