@@ -2,7 +2,7 @@
 title: Azure SRE Agent Enterprise Showcase
 description: Fifteen observable FastAPI workloads and a Spec Kit for demonstrating Azure SRE Agent
 author: Enterprise SRE Platform Team
-ms.date: 2026-10-10
+ms.date: 2026-10-11
 ms.topic: overview
 keywords:
   - azure sre agent
@@ -120,7 +120,7 @@ Enterprise decision documents:
 * [Business specification](docs/business-specification.md)
 * [Detailed design](docs/detailed-design.md)
 * [User guide](docs/user-guide.md)
-* [Central US cost model](docs/cost-model.md)
+* [MVP cost model](docs/cost-model.md)
 * [Architecture](docs/architecture.md)
 
 ## Validation
@@ -149,6 +149,11 @@ The design follows the current official Azure SRE Agent guidance:
 This repository creates billable Azure resources when deployed. Review Azure
 pricing, use budget controls, keep response plans in Review mode until validated,
 and remove the resource group after a workshop.
+
+## Contributor
+
+This project is maintained by
+[Cloud (`@krishnacloud123`)](https://github.com/krishnacloud123).
 
 ## License
 
