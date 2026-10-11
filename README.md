@@ -116,6 +116,7 @@ and [enterprise demonstration guide](docs/enterprise-demo-guide.md).
 
 Enterprise decision documents:
 
+* [Live application catalog and Azure SRE Agent value](docs/application-catalog.md)
 * [Business specification](docs/business-specification.md)
 * [Detailed design](docs/detailed-design.md)
 * [User guide](docs/user-guide.md)
